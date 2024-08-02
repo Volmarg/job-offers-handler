@@ -1,0 +1,175 @@
+crawler_configuration:
+
+  scrap_pagination:
+    engine: !php/const WebScrapperBundle\Service\CrawlerService::CRAWLER_ENGINE_GOUTTE
+    wait_for_dom_element_selector_name: ""
+    wait_for_function_to_return_true: ""
+    wait_milliseconds: null
+
+  scrap_job_offer_detail:
+    engine: !php/const WebScrapperBundle\Service\CrawlerService::CRAWLER_ENGINE_GOUTTE
+    wait_for_dom_element_selector_name: ""
+    wait_for_function_to_return_true: ""
+    wait_milliseconds: null
+
+
+search_uri:
+  base_host: null
+  base_uri:
+    standard: "/jobs?q="
+    sorted_latest_first: "/jobs?sort=date&q="
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_QUERY
+  encode_query: true
+  location:
+    placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\Constants\LocationSearchUriConstants::LOCATION_PLACEMENT_QUERY
+    spacebar_replace_character: "+"
+    query:
+      param_name: "l"
+    distance:
+      placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\Constants\LocationSearchUriConstants::LOCATION_PLACEMENT_QUERY
+      query:
+        param_name: "radius"
+      allowed_distances: {
+        0: 0,
+        10: 10,
+        25: 25,
+        50: 50,
+        75: 75,
+        100: 100
+      }
+
+pagination:
+  start_value: 0
+  increment_value: 10
+  multiple_keywords_separator_character: "+"
+  pagination_spacebar_in_keyword_words_replace_character: "+"
+  page_number_query_parameter_name: "start"
+
+links:
+  detail_page:
+    excluded_regex_patterns: [
+      '/pagead/clk' # Advertisement job offers - can repeat on all pages - most likely paid / promoted offers
+    ]
+
+selectors:
+
+  # this special selector will fetch job offers card/blocks on pagination, is also used as fallback to get offer uri in case when the block itself is a link
+  pagination_page_offer_block:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_OFFER_BLOCK
+    css_selector: 'div.resultWithShelf'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_job_title:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_JOB_TITLE
+    css_selector: ".jcs-JobTitle>span"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_company_name:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_COMPANY_NAME
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_link_to_detail_page:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_LINK_TO_DETAIL_PAGE
+    css_selector: ".jcs-JobTitle"
+    target_attribute_name: "href"
+    get_data_from_inner_text: false
+    get_data_from_attribute: true
+    called_method: null
+
+  job_name_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_NAME
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  job_description_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_DESCRIPTION
+    css_selector: ".jobsearch-jobDescriptionText"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  job_offer_job_posted_date_time:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_POSTED_DATE_TIME
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  company_location_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_COMPANY_WORKPLACE_DATA_LOCATION
+    css_selector: '[data-testid="inlineHeader-companyLocation"]'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  company_name_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_COMPANY_WORKPLACE_DATA_COMPANY_NAME
+    css_selector: '[data-testid="inlineHeader-companyName"] span a'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  contact_company_email:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_CONTACT_DETAIL_COMPANY_EMAIL
+    css_selector: ".jobsearch-jobDescriptionText"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\BaseScrapperService::METHOD_EXTRACT_EMAIL_FROM_STRING
+
+  contact_company_phone:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_CONTACT_DETAIL_COMPANY_PHONE
+    css_selector: ".jobsearch-InlineCompanyRating > .icl-u-lg-mr--sm"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  salary_min_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_MIN
+    css_selector: "#salaryInfoAndJobType"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\BaseScrapperService::EXTRACT_MIN_VALUE
+
+  salary_max_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_MAX
+    css_selector: "#salaryInfoAndJobType"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\BaseScrapperService::EXTRACT_MAX_VALUE
+
+  salary_estimated_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_ESTIMATED
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  remote_work_possible_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_REMOTE_WORK_POSSIBLE
+    css_selector: ".jobsearch-jobDescriptionText"
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\DomHtml\ScrapperInterface::METHOD_IS_REMOTE_WORK_POSSIBLE

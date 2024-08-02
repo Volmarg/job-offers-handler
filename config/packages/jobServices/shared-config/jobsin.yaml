@@ -1,0 +1,37 @@
+search_uri:
+  scrap_engine: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\Api\ApiConfigurationBuilderInterface::SCRAP_ENGINE_CLI_CURL
+  base_host: "https://search-api.jobsinnetwork.services"
+  method: !php/const Symfony\Component\HttpFoundation\Request::METHOD_GET
+
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_QUERY
+
+  location:
+    placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\Constants\LocationSearchUriConstants::LOCATION_PLACEMENT_QUERY
+    spacebar_replace_character: "%20"
+    query:
+      param_name: "location.address"
+
+pagination:
+  start_value: 1
+  increment_value: 1
+  multiple_keywords_separator_character: "%20"
+  pagination_spacebar_in_keyword_words_replace_character: "%20"
+  page_number_query_parameter_name: "page"
+
+detail_page:
+  method: null
+
+json_structure:
+  all_jobs: "hydra:member"
+  job_detail:
+    url: "url"
+    title: "title"
+    location:
+      type: !php/const JobSearcher\DTO\JobService\SearchConfiguration\Api\JsonStructureConfigurationDto::LOCATION_TYPE_SINGLE_PATH
+      single_entry_path: "location.city"
+      array_structure_path: ''
+    description: 'description'
+    company_name: 'company.name'
+    more_information: null
+    job_posted_date_time: 'published_at'
+    detail_page_identifier_field: ""

@@ -1,0 +1,44 @@
+monolog:
+  channels: ['shell', "aqmp", "offerExtraction", "searchEngine", "smtpValidator"]
+  handlers:
+    shell:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/shell.log'
+      channels: [ 'shell' ]
+    security:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/security.log'
+      channels: [ 'security' ]
+    symfony_mailer:
+      type: service
+      id:   JobSearcher\Service\Log\EmailHandler
+    aqmp:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/aqmp.log'
+      channels: [ 'aqmp', "phpamqplib" ]
+    offerExtraction:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/offer-extraction.log'
+      channels: [ 'offerExtraction' ]
+    searchEngine:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/search-engine.log'
+      channels: [ 'searchEngine' ]
+    smtpValidator:
+      level: debug
+      type: rotating_file
+      max_files: 14
+      path: '%kernel.logs_dir%/%kernel.environment%/smtp-validator.log'
+      channels: [ 'smtpValidator' ]
+    main:
+      channels: [ "!event", "!searchEngine", "!aqmp", "!offerExtraction", "!shell", "!security", "!phpamqplib" ]

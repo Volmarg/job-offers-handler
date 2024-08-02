@@ -1,0 +1,2 @@
+parameters:
+  jooblo.base_url: "http://host.docker.internal:8001/"

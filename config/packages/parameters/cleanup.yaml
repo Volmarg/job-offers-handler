@@ -1,0 +1,17 @@
+parameters:
+  # If extraction ID is older than given amount of days then
+  # - extraction is removed,
+  # - related offers are removed,
+  # - companies / emails must stay as these will be still in use and other removal rules will apply
+  max_days_extraction_with_offers_lifetime: 21 # 3 weeks, minimal value must always be at least 21, because it will be mentioned in the regulations accepted by user
+
+  # if email was validated last time given amount of days then it should be re-validated
+  # should rarely be the case since emails that are not used / related will be removed earlier
+  email_re_validated_after_days: 60
+
+  # if company is not being related to anything then it should be removed after give amount of days
+  # same thing about the related branches, emails etc. all the data related strictly to company
+  # Offers are removed earlier than company, as there is slight chance that some offers will still get bound to the existing company
+  max_days_unrelated_company_lifetime: 30
+
+  max_days_debug_data_lifetime: 7

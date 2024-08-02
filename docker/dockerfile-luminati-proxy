@@ -1,0 +1,4 @@
+FROM luminati/luminati-proxy:latest
+
+#UI
+EXPOSE 22999

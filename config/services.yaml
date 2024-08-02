@@ -1,0 +1,246 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    JobSearcher\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+            - '../src/DTO/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    JobSearcher\Service\JobService\ConfigurationBuilder\DomHtml\DomHtmlConfigurationBuilder:
+        calls:
+            - loadAllConfigurations: []
+
+    JobSearcher\Service\JobService\ConfigurationBuilder\Api\ApiConfigurationBuilder:
+        calls:
+            - loadAllConfigurations: [ ]
+
+    monolog.logger:
+        class: Monolog\Logger
+        public: true
+        arguments:
+            $name: "Job offers handler"
+
+    Psr\Log\LoggerInterface: '@monolog.logger'
+
+    JobSearcher\Command\JobSearch\SingleConfigurationJobOffersExtractorCommand:
+        public: true
+        calls:
+            - setExtractors: [[
+                '@JobSearcher\Service\JobSearch\Command\Extractor\Api\ExtractorService',
+                '@JobSearcher\Service\JobSearch\Command\Extractor\DomHtml\ExtractorService']]
+
+    JobSearcher\Command\JobSearch\AllJobOffersExtractorCommand:
+        public: true
+        calls:
+            - setExtractors: [[
+                '@JobSearcher\Service\JobSearch\Command\Extractor\Api\ExtractorService',
+                '@JobSearcher\Service\JobSearch\Command\Extractor\DomHtml\ExtractorService']]
+
+    JobSearcher\Service\JobSearch\Command\Extractor\ExtractorServiceFactory:
+        public: true
+        calls:
+            - setExtractors: [ [
+                '@JobSearcher\Service\JobSearch\Command\Extractor\Api\ExtractorService',
+                '@JobSearcher\Service\JobSearch\Command\Extractor\DomHtml\ExtractorService' ] ]
+
+    JobSearcher\Service\JobSearch\Result\JobSearchResultService:
+        public: true
+
+    JobSearcher\Repository\JobSearchResult\JobSearchResultRepository:
+        public: true
+
+    JobSearcher\Service\JobSearch\Extractor\Api\LocationExtractorService:
+        public: true
+
+    JobSearcher\Service\JobSearch\Extractor\Api\ExtractorResolverService:
+        public: true
+
+    WebScrapperBundle\Service\Request\Guzzle\GuzzleService:
+        public: true
+
+    SmtpEmailValidatorBundle\Service\SmtpValidator:
+        public: true
+
+    JobSearcher\Service\Finance\MoneyParserService:
+        public: true
+
+    WebScrapperBundle\Service\ScrapEngine\CliCurlScrapEngine:
+        public: true
+
+    WebScrapperBundle\Service\CrawlerService:
+        public: true
+
+    JobSearcher\Service\JobSearch\UrlHandler\General\Location\LocationDistanceUrlHandlerService:
+        public: true
+
+    JobSearcher\Service\JobSearch\UrlHandler\General\Location\LocationNameUrlHandlerService:
+        public: true
+
+    JobSearcher\Service\JobSearch\Keyword\KeywordHandlerService:
+        public: true
+
+    JobSearcher\Service\Validation\ValidatorService:
+        public: true
+
+    JobSearcher\RabbitMq\Consumer\JobSearch\DoJobSearchConsumer:
+        public: true
+
+    JobSearcher\Service\JobSearch\Scrapper\DomHtml\ScrapperService:
+        public: true
+
+    JobSearcher\Service\JobSearch\ResultBuilder\DomHtml\ResultBuilderService:
+        public: true
+
+    # Jwt auth
+
+    # need to overwrite the service as in S6 there is no way to define the guard in new auth system
+    JobSearcher\Security\LexitBundleJwtTokenAuthenticator:
+        public: true
+    lexik_jwt_authentication.jwt_token_authenticator: '@JobSearcher\Security\LexitBundleJwtTokenAuthenticator'
+
+    # RabbitMq specific
+    PhpAmqpLib\Connection\AbstractConnection: '@JobSearcher\RabbitMq\Connection\Connection'
+
+    PhpAmqpLib\Wire\IO\SocketIO:
+        arguments:
+            $host: '%env(RABBITMQ_HOST)%'
+            $port: '%env(int:RABBITMQ_PORT)%'
+
+    JobSearcher\RabbitMq\Connection\Connection:
+        arguments:
+            $user: '%env(RABBITMQ_LOGIN)%'
+            $password: '%env(RABBITMQ_PASSWORD)%'
+            $io: '@PhpAmqpLib\Wire\IO\SocketIO'
+
+    JobSearcher\Service\JobSearch\Extractor\DomHtml\ExtractorService:
+        autowire: false
+
+    JobSearcher\Service\JobSearch\Extractor\Api\ExtractorService:
+        autowire: false
+
+    JobSearcher\Service\JobAnalyzer\JobSearchResultAnalyzerService:
+        autowire: false
+
+    JobSearcher\Service\JobService\ConfigurationBuilder\Common\SearchUriConfigurationBuilder:
+        public: true
+
+    JobSearcher\Service\JobSearch\Crawler\DynamicDelayDecider:
+        public: true
+
+    parameter_bag_public:
+        alias: parameter_bag
+        public: true
+
+    JobSearcher\Service\JobSearch\Result\OffersFilterService:
+        arguments:
+            $filters:
+                - '@JobSearcher\Service\JobSearch\Result\Filter\OfferDistanceFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\SameOffersFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\ExcludedOffersFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\PreviousOffersFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\KeywordsFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\EmployeesCountFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\HumanLanguageFilter'
+                - '@JobSearcher\Service\JobSearch\Result\Filter\LocationNameFilter'
+
+    JobSearcher\Command\Cleanup\DebugDataCleanupCommand:
+        arguments:
+            $debugDataMaxDaysLifetime: '%max_days_debug_data_lifetime%'
+            $cleanedDirectories:
+                - '%folder.tmp%'
+                - '%folders.data.language_detection.polyglot.failed%'
+                - '%dir.search_engine_result%'
+
+    JobSearcher\Service\Filters\FilterValuesService:
+        arguments:
+            $offersProviders:
+                - '@JobSearcher\Service\Filters\Provider\JobOffers\CitiesFilterDataProvider'
+                - '@JobSearcher\Service\Filters\Provider\JobOffers\SalaryFilterDataProvider'
+                - '@JobSearcher\Service\Filters\Provider\JobOffers\CountryFilterDataProvider'
+
+    JobSearcher\Service\Server\ServerLifeService:
+        arguments:
+            $shutdownFilePath: '%folder.server_life%%shutdown_file_name%'
+            $restartFilePath: '%folder.server_life%%restart_file_name%'
+
+    CompanyDataProvider\Controller\Provider\CompanyDataProviderController:
+        arguments:
+            $apiCallAllowanceChecker: '@JobSearcher\Service\Bundle\CompanyDataProvider\ApiCallAllowanceChecker'
+
+    JobSearcher\Service\JobService\ConfigurationReader\ConfigurationReader:
+        public: true
+
+    JobSearcher\Command\Cleanup\DuplicatesCleanupCommand:
+        arguments:
+            $duplicateCleanupServices:
+                # Order matters as it defines order of executions, it's VERY important, else there might be cases where one
+                # logic wipes something out before other one merges it!
+                - '@JobSearcher\Service\Cleanup\Duplicate\EmailDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\LocationDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\CompanyDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\CompanyBranchDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\JobOfferDuplicateHandlerService'
+            $duplicateRemovalServicesOrdered:
+                # Order matters! And yes it's different from cleanup order - that's correct
+                - '@JobSearcher\Service\Cleanup\Duplicate\EmailDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\JobOfferDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\LocationDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\CompanyDuplicateHandlerService'
+                - '@JobSearcher\Service\Cleanup\Duplicate\CompanyBranchDuplicateHandlerService'
+
+    # Because it's used in WebScrapper and in current project
+    ProxyProviderBridge\Service\BridgeService:
+        arguments:
+            $logFilePath: "%proxy_provider.log.file_path%"
+            $loggerName: "%proxy_provider.log.name%"
+            $baseUrl: '%proxy_provider.base_url%'
+
+    JobSearcher\Service\JobSearch\Extractor\Api\CallHandlerService:
+        public: true
+
+    JobSearcher\Service\JobSearch\Decider\OfferSavingDecider:
+        public: true
+
+    CompanyDataProvider\Service\Parser\CompanyNameParser:
+        public: true
+
+    JobSearcher\Service\Bundle\ProxyProvider\ProxyProviderService:
+        public: true
+
+    Monolog\Formatter\HtmlFormatter:
+        public: true
+
+    JobSearcher\Service\Log\EmailHandler:
+        arguments:
+            $messageTemplate: '@email.handler.template'
+            $level: 'error'
+            $bubble: true
+
+    'email.handler.template':
+        class: Symfony\Component\Mime\Email
+        calls:
+            - subject: ['[ERROR] %project.name% - %kernel.environment% (IP: %env(APP_HOST_IP)%) - %%message%%']
+            - from: ['%project.from_email%']
+            - to: ['%env(APP_EXCEPTION_EMAIL)%']
+
+    Symfony\Component\Mime\Email:
+        public: true

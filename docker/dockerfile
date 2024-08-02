@@ -1,0 +1,107 @@
+FROM ubuntu:jammy
+
+# Required else the ubuntu installation qill ask for timezone in interactive mode
+ARG DEBIAN_FRONTEND=noninteractive;
+ENV TZ="Europe/Warsaw"
+
+# `apt-get update` is requirement to be able to install any packages at all, it mustt be called first and MUST be chained
+# with some `apt-get` afterwards, as it's some known docker caching issue.
+RUN     yes | apt-get update \
+    &&  yes | apt-get install software-properties-common \
+    &&  yes | apt-get install nano \
+    &&  yes | apt-get install wget \
+    &&  yes | apt-get install iputils-ping \
+    &&  yes | apt-get install curl;
+
+# Install php 8.1
+RUN     add-apt-repository ppa:ondrej/php;
+RUN     yes | apt-get update \
+    &&  yes | apt-get install lsb-release ca-certificates apt-transport-https \
+    &&  yes | apt-get install \
+    &&  yes | apt-get install php8.1 \
+    &&  yes | apt-get install php8.1-bcmath \
+    &&  yes | apt-get install php8.1-bz2 \
+    &&  yes | apt-get install php8.1-cgi \
+    &&  yes | apt-get install php8.1-cli \
+    &&  yes | apt-get install php8.1-common \
+    &&  yes | apt-get install php8.1-curl \
+    &&  yes | apt-get install php8.1-fpm \
+    &&  yes | apt-get install php8.1-gd \
+    &&  yes | apt-get install php8.1-intl \
+    &&  yes | apt-get install php8.1-ldap \
+    &&  yes | apt-get install php8.1-mbstring \
+    &&  yes | apt-get install php8.1-mysql \
+    &&  yes | apt-get install php8.1-opcache \
+    &&  yes | apt-get install php8.1-pgsql \
+    &&  yes | apt-get install php8.1-readline \
+    &&  yes | apt-get install php8.1-soap \
+    &&  yes | apt-get install php8.1-xdebug \
+    &&  yes | apt-get install php8.1-xml \
+    &&  yes | apt-get install php8.1-zip \
+    &&  yes | apt-get install php8.1-xdebug;
+
+# Need to expose internal container port to allow mapping it to some port that will be accesible outside of container
+EXPOSE 80
+
+# Will set the localhost as the one on which apache should run
+# However cannot restart the apache here as it will then bind itself to some other port "HELL KNOWS WHY".
+RUN printf "\n# Required to make apache run on 127.0.0.1 \nServerName localhost \n" >> /etc/apache2/apache2.conf;
+
+# Symfony routes wont work without it
+RUN a2enmod rewrite;
+
+# Make polyglot package work
+RUN yes | apt-get install git;
+RUN     yes | apt-get install libpython2-stdlib=2.7.18-3 \
+    libpython2.7-minimal=2.7.18-13ubuntu1.2 \
+    libpython2.7-stdlib=2.7.18-13ubuntu1.2 \
+    python2-minimal=2.7.18-3 \
+    python2.7-minimal=2.7.18-13ubuntu1.2 \
+    python2.7=2.7.18-13ubuntu1.2 \
+    python2=2.7.18-3;
+
+
+RUN yes | apt update --fix-missing;
+
+# todo: set fixed package versions
+
+# Using this specific pip version else polyglot setup fails
+## it fails, and it seems to be known issue for higher pip versions
+RUN yes | apt-get install python3-pip=22.0.2+dfsg-1ubuntu0.4;
+RUN yes | apt-get install python3-icu=2.8.1-0ubuntu2;
+RUN pip install ez_setup==0.9;
+RUN pip install --upgrade setuptools==70.3.0;
+RUN cd /tmp && pip install -U git+https://github.com/aboSamoor/polyglot.git@master;
+
+# Required for web-scrapper
+RUN yes | apt-get install libxss1=1:1.2.3-1build2 \
+    libappindicator1=12.10.1+20.10.20200706.1-0ubuntu1 \
+    libindicator7=16.10.0+18.04.20180321.1-0ubuntu5 \
+    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && yes | apt install ./google-chrome*.deb;
+
+RUN mkdir -p /etc/offers-handler/server-life;
+RUN chmod 755 /etc/offers-handler/server-life;
+RUN chown www-data. /etc/offers-handler/server-life;
+
+# Prepare structure for text language detection logic
+RUN mkdir -p /tmp/polyglot/;
+RUN chmod 777 /tmp/polyglot/;
+
+# Make supervisor work
+RUN yes | apt-get install supervisor;
+
+# Packages needed for browsershot (web-scrapper-bundle)
+RUN yes | apt-get install npm;
+RUN yes | npm i n -g;
+RUN yes | n 16.0.0; # Version 16 is needed to DOWNLOAD and use puppeteer
+RUN yes | apt-get install chromium-browser;
+RUN yes | npm install puppeteer -g && yes | npm install puppeteer-core -g;
+
+# Crontab
+RUN yes | apt-get install cron;
+
+# Install composer
+RUN wget https://getcomposer.org/download/2.7.7/composer.phar \
+    && mv composer.phar /usr/local/bin/composer \
+    && chmod 777 /usr/local/bin/composer;

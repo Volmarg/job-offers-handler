@@ -1,0 +1,3 @@
+# Container cron
+## Handle container shutdown - each 1 min
+* * * * * root sh /var/cron/scripts/shutdown-container.sh >> /var/log/crontab 2>&1

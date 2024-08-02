@@ -1,0 +1,3 @@
+parameters:
+  folder.tmp: "%kernel.project_dir%/temp"
+  folder.server_life: "/etc/offers-handler/server-life/"

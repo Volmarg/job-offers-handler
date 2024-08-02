@@ -1,0 +1,52 @@
+# Info: returns salary in api so can extend this in future
+# Info: is blocked by captcha, does fail fetching data sometimes, but is stable enough
+configuration:
+  name: "infojobs.net.esp"
+  enabled: true
+
+host: "https://www.infojobs.net"
+
+search_uri:
+  scrap_engine: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\Api\ApiConfigurationBuilderInterface::SCRAP_ENGINE_CLI_CURL
+  base_host: "https://www.infojobs.net"
+  base_uri:
+    standard: "/webapp/offers/search"
+
+  resolver: 'JobSearcher\Service\JobService\Resolver\API\Esp\InfoJobsEspNetResolver->buildSearchUri'
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_REQUEST_BODY
+
+  method: !php/const Symfony\Component\HttpFoundation\Request::METHOD_GET
+  request:
+    headers:
+      host:
+        name: "host"
+        value: 'www.infojobs.net'
+      user_agent:
+        name: "user-agent"
+        value: !php/const WebScrapperBundle\Constants\UserAgentConstants::CHROME_114
+
+pagination:
+  start_value: 1
+  increment_value: 1
+  multiple_keywords_separator_character: " "
+  pagination_spacebar_in_keyword_words_replace_character: ""
+  page_number_query_parameter_name: "page"
+
+detail_page:
+  base_host: "" # because absolute links are already getting returned, so don't want them to be glued to host
+  method: !php/const Symfony\Component\HttpFoundation\Request::METHOD_GET
+
+json_structure:
+  all_jobs: "offers"
+  job_detail:
+    url: "link"
+    title: "title"
+    location:
+      type: !php/const JobSearcher\DTO\JobService\SearchConfiguration\Api\JsonStructureConfigurationDto::LOCATION_TYPE_SINGLE_PATH
+      single_entry_path: "city"
+      array_structure_path: null
+    description: 'description'
+    company_name: 'companyName'
+    more_information: null
+    job_posted_date_time: 'publishedAt'
+    detail_page_identifier_field: null

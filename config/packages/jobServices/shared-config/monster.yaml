@@ -1,0 +1,120 @@
+# Throws randomly "waf forbidden" - some protection, can't bypass it for now
+search_uri:
+  base_host: "https://appsapi.monster.io"
+
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_REQUEST_BODY
+
+  location:
+    distance:
+      allowed_distances: {
+        5: 5,
+        10: 10,
+        20: 20,
+        50: 50,
+        100: 100
+      }
+
+  method: !php/const Symfony\Component\HttpFoundation\Request::METHOD_POST
+  request:
+    rawBody:
+      params:
+        fingerprintId:
+          name: "fingerprintId"
+          value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getFingerPrintId'
+          children: []
+        searchId:
+          name: "searchId"
+          value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchId'
+          children: []
+        pageSize:
+          name: "pageSize"
+          value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->calculateSearchUriPageSize'
+          children: []
+        offset:
+          name: "offset"
+          value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriOffset'
+          children: []
+        jobQuery:
+          name: "jobQuery"
+          value: null
+          children:
+            query:
+              name: "query"
+              value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyQueryKeywordsString'
+              children: []
+            activationRecency:
+              name: "activationRecency"
+              value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyActivationRecency'
+              children: []
+            locations:
+              name: "locations"
+              value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getLocations'
+              children: []
+        jobAdsRequest:
+          name: "jobAdsRequest"
+          value: null
+          children:
+            position:
+              name: "position"
+              value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyJobsAdsPosition'
+              children: []
+            placement:
+              name: "placement"
+              value: null
+              children:
+                channel:
+                  name: "channel"
+                  value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyPlacementChildren'
+                  children: []
+                location:
+                  name: "location"
+                  value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyPlacementLocation'
+                  children:
+                property:
+                  name: "property"
+                  value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyPlacementProperty'
+                  children: []
+                type:
+                  name: "type"
+                  value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyPlacementType'
+                  children:
+                view:
+                  name: "view"
+                  value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriBodyPlacementView'
+                  children: []
+    headers:
+      content_length:
+        name: "content-length"
+        value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->calculateSearchUriHeaderContentLength'
+      content_type:
+        name: "content-type"
+        value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriHeaderContentType'
+      host:
+        name: "host"
+        value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriHeaderHost'
+      user_agent:
+        name: "user-agent"
+        value: 'JobSearcher\Service\JobService\Resolver\API\MonsterResolver->getSearchUriHeaderUserAgent'
+
+pagination:
+  # pagination first page & incrementer are skipped on purpose because the pagination endpoint never changes
+  multiple_keywords_separator_character: " "
+  page_number_query_parameter_name: ""
+
+detail_page:
+  method: null
+
+json_structure:
+  all_jobs: "jobResults"
+  job_detail:
+    url: "jobPosting.url"
+    title: "jobPosting.title"
+    location:
+      type: !php/const JobSearcher\DTO\JobService\SearchConfiguration\Api\JsonStructureConfigurationDto::LOCATION_TYPE_ARRAY
+      single_entry_path: "postalAddress.address.addressLocality"
+      array_structure_path: 'enrichments.normalizedJobLocations'
+    description: 'jobPosting.description'
+    company_name: 'jobPosting.hiringOrganization.name'
+    more_information: null
+    job_posted_date_time: 'jobPosting.datePosted'
+    detail_page_identifier_field: "jobId"

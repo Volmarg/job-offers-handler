@@ -1,0 +1,85 @@
+version: "2.4"
+services:
+  job_offers_handler:
+    # Start the container every time that pc is restarted
+    restart: always
+    container_name: job-offers-handler
+
+    # This chain of calls will
+    # - restart apache (without it the site won't work on HOST)
+    # - start the rabbitmq consumers
+    command: sh -c "./docker/entrypoint.sh && nano /tmp/log.log"
+
+    # this is needed to let the docker access the HOST data, for example MYSQL
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # will automatically go to this folder when entering the container in interactive mode (exec -it bash)
+    working_dir: /var/www/html
+
+    # without this the container starts and exits, this is a must to keep the container alive
+    tty: true
+
+    build:
+      context: .
+      dockerfile: ./dockerfile
+
+    # port on which will this project be locally available
+    ports:
+      - "8007:80"
+
+    networks:
+      network-bridge:
+        ipv4_address: 172.15.238.10
+
+    volumes:
+      - ../:/var/www/html
+      - /etc/offers-handler/server-life:/etc/offers-handler/server-life
+      - ./container-data/apache/sites/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./container-data/php/mods/xdebug-prod.ini:/etc/php/8.1/mods-available/xdebug.ini
+      - ./container-data/supervisor/supervisor.conf:/etc/supervisor/conf.d/job-searcher.conf
+      - ./container-data/etc/cron.d:/etc/cron.d
+      - /usr/lib/nagios/plugins:/usr/lib/nagios/plugins
+
+  # based on : https://github.com/luminati-io/luminati-proxy/pull/211/files
+  # See: https://brightdata.com/products/proxy-manager
+  # Reason: https://help.brightdata.com/hc/en-us/articles/5119309448977?input_string=proxy+without+authentication
+  ## Explicitly: Chrome headless cannot authenticate with login:password@ip:port, only with ip:port
+  ## This service MUST stay here, reason is that job searcher will be on separated server, and it's the only project
+  ### that relies on proxy, so want it to have easy access to it
+  luminati-proxy:
+    build:
+      context: .
+      dockerfile: ./dockerfile-luminati-proxy
+
+    restart: always
+    container_name: luminati-proxy
+
+    # without this the container starts and exits, this is a must to keep the container alive
+    tty: true
+
+    # port on which will this project be locally available
+    ports:
+      - "22999:22999"
+
+    networks:
+      network-bridge:
+        ipv4_address: 172.15.238.11
+
+    # searcher runs on the same host, want it to be able to reach proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    command: ["luminati"]
+    volumes:
+      - luminati-proxy:/root/proxy_manager/
+
+volumes:
+  luminati-proxy:
+
+networks:
+  network-bridge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.15.238.0/24

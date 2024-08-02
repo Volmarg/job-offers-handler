@@ -1,0 +1,23 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+/node_modules/
+/.idea/
+/data/*
+/.env
+/.is-installed
+/.env.backup*
+###< symfony/framework-bundle ###
+
+# Single Files
+/src/Action/TestAction.php
+/test.html
+
+# Garbage
+/temp/no-results-on-pagination-page*

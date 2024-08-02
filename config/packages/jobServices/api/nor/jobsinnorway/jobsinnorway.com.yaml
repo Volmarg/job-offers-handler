@@ -1,0 +1,13 @@
+# This service provides offers from variety of different services so don't get surprised
+# that offer from other domain is assigned to the entity in db etc.
+configuration:
+  name: "jobsinnorway.com"
+  enabled: true
+
+host: "https://norway.jobsinnetwork.com"
+
+search_uri:
+  base_uri:
+    standard: "/api/jobs.jsonld?limit=25&cache=true&published=true&location.countryCode[]=NO&q="
+
+imported_share_file_name: 'jobsin.yaml'

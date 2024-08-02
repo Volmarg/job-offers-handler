@@ -1,0 +1,7 @@
+parameters:
+  # If offer is older than this amount of days then new offer (same like) the found one will be created,
+  # this is required because fresh offer can have some details changed like for example `posted` date-time etc.
+  #
+  # Yet old offers cannot be removed because these are bound to user search request, and must still be returned when
+  # user will want to see the results
+  max_days_offset_before_creating_newer_duplicate: 7

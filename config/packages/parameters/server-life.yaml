@@ -1,0 +1,3 @@
+parameters:
+  shutdown_file_name: shutdown-server.life
+  restart_file_name: restart-server.life

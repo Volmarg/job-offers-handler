@@ -1,0 +1,34 @@
+# Some information regarding the configuration
+# Combination of these (or probably just `durable`)
+#                durable: false
+#                auto_delete: true
+# will cause any message sent to queue to be discarded if the consumer is NOT running, which is BAD
+
+old_sound_rabbit_mq:
+    connections:
+        default:
+            url: '%env(RABBITMQ_URL)%'
+    # None of the consumers can have configured quorum or any type of queue max-retry as this causes
+    # issues with the messages which are stuck in the rabbit due to for example Voltigo being disabled
+    # in such case the messages were simply getting wiped
+    consumers:
+        jobOffersHandler:
+            connection: default
+            exchange_options: { name: 'job-offers-handler-do-search', type: direct }
+            queue_options:
+                name: 'job-offers-handler-do-search'
+                routing_keys:
+                    - 'job-offers-handler-do-search'
+                arguments:
+                    'x-queue-type': [ 'S', 'quorum' ] # queue type
+            callback: JobSearcher\RabbitMq\Consumer\JobSearch\DoJobSearchConsumer
+            enable_logger: true
+        test:
+            connection: default
+            exchange_options: { name: 'test', type: direct}
+            queue_options:
+                name: 'test'
+                routing_keys:
+                    - 'test'
+            callback: JobSearcher\RabbitMq\Consumer\TestConsumer
+            enable_logger: true

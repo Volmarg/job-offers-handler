@@ -1,0 +1,4 @@
+parameters:
+  project.name: "Job offers handler"
+  project.name.spaceless: "job-offers-handler"
+  project.from_email: "no-reply@job-offer-handler.com"

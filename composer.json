@@ -1,0 +1,130 @@
+{
+    "type": "project",
+    "license": "proprietary",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "name": "volmarg/job-searcher-bundle",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/lingua-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/company-data-provider-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/keywords-finder-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/geo-data-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/voltigo-backend-bridge"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/web-scrapper-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/search-engine-provider-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/data-parser-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/email-validator-bundle"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Volmarg/proxy-provider-bridge"
+        }
+    ],
+    "require": {
+        "php": ">=8.1.0",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "beberlei/doctrineextensions": "master",
+        "composer/package-versions-deprecated": "1.11.99.4",
+        "doctrine/doctrine-bundle": "v2.10.1",
+        "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "doctrine/doctrine-migrations-bundle": "^3.2",
+        "doctrine/orm": "v2.14.1",
+        "egulias/email-validator": "^3.2",
+        "fakerphp/faker": "^1.19",
+        "guzzlehttp/guzzle": "^7.3",
+        "lexik/jwt-authentication-bundle": "v2.18.1",
+        "myclabs/deep-copy": "1.10.0",
+        "php-amqplib/rabbitmq-bundle": "^2.11",
+        "sebastian/comparator": "^4.0",
+        "sensio/framework-extra-bundle": "v6.2.0",
+        "spatie/crawler": "^7.0.0",
+        "symfony/console": "6.0.*",
+        "symfony/debug-bundle": "6.0.*",
+        "symfony/dotenv": "6.0.*",
+        "symfony/flex": "^2",
+        "symfony/framework-bundle": "6.0.*",
+        "symfony/google-mailer": "^6.2",
+        "symfony/lock": "^6.1",
+        "symfony/mailer": "^6.1",
+        "symfony/monolog-bundle": "^3.7",
+        "symfony/proxy-manager-bridge": "6.0.*",
+        "symfony/runtime": "^6.0",
+        "symfony/serializer": "6.0.*",
+        "symfony/validator": "6.0.*",
+        "symfony/yaml": "6.0.*",
+        "thiagoalessio/tesseract_ocr": "^2.12",
+        "volmarg/company-data-provider-bundle": "@dev",
+        "volmarg/data-parser-bundle": "@dev",
+        "volmarg/email-validator-bundle": "@dev",
+        "volmarg/geo-data-bundle": "@dev",
+        "volmarg/keywords-finder-bundle": "@dev",
+        "volmarg/lingua-bundle": "@dev",
+        "volmarg/proxy-provider-bridge": "@dev",
+        "volmarg/voltigo-backend-bridge": "@dev",
+        "volmarg/web-scrapper-bundle": "@dev",
+        "wnx/faker-swiss-locations": "dev-main#5a94ea51eb3bd9b7646d5fc9f9c9b4bf6cb089d5"
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.34",
+        "symfony/var-dumper": "6.0.*"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": false,
+            "symfony/runtime": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "JobSearcher\\": "src/",
+            "Wnx\\FakerSwissCities\\": "vendor/wnx/faker-swiss-locations/src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JobSearcher\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {},
+    "conflict": {
+        "symfony/symfony": "*"
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": false,
+            "require": "6.0.*"
+        }
+    }
+}

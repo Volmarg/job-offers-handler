@@ -1,0 +1,65 @@
+configuration:
+  name: "gowork.pl"
+  enabled: true
+
+host: "https://www.gowork.pl"
+
+search_uri:
+  base_host: "https://www.gowork.pl"
+  base_uri:
+    standard: "/api/v1/jobs/"
+
+  resolver: 'JobSearcher\Service\JobService\Resolver\API\Pl\GoWorkPlResolver->buildSearchUri'
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_QUERY
+
+  location:
+    distance:
+      allowed_distances: {
+        5: 5,
+        10: 10,
+        20: 20,
+        30: 30,
+        50: 50,
+        75: 75,
+        100: 100
+      }
+
+  method: !php/const Symfony\Component\HttpFoundation\Request::METHOD_POST
+
+links:
+  detail_page:
+    excluded_regex_patterns: [
+      'www/oferta-zewnetrzna' # these are just offers pointing to other services (the "WWW" on front is a must!, since some external offers are accessible on this service)
+    ]
+
+pagination:
+  start_value: 1
+  increment_value: 1
+  multiple_keywords_separator_character: "-"
+  pagination_spacebar_in_keyword_words_replace_character: "-"
+  page_number_query_parameter_name: ""
+
+detail_page:
+  data_resolver: 'JobSearcher\Service\JobService\Resolver\API\Pl\GoWorkPlResolver->buildDetailPageDataArray'
+  base_host: "https://www.gowork.pl"
+  method: null
+  description:
+    removed_elements_selectors:
+      - '.application-button'
+      - '.job-content__declarations'
+      - '[src*="gowork.pl/files"]'
+
+json_structure:
+  all_jobs: "results"
+  job_detail:
+    url: "first_location.url.url"
+    title: "title"
+    location:
+      type: !php/const JobSearcher\DTO\JobService\SearchConfiguration\Api\JsonStructureConfigurationDto::LOCATION_TYPE_SINGLE_PATH
+      single_entry_path: "first_location.city"
+      array_structure_path: null
+    description: 'detail.description' # this one comes from resolver
+    company_name: 'company.name'
+    more_information: null
+    job_posted_date_time: 'published_at'
+    detail_page_identifier_field: ""

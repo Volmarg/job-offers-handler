@@ -1,0 +1,5 @@
+parameters:
+  jooblo.jwt.lifetime.hours: 1
+  jooblo.jwt.user_name: "%project.name.spaceless%"
+  jooblo.log.file_path: "%kernel.logs_dir%/%kernel.environment%/jooblo-bridge.log"
+  jooblo.log.name: "JoobloBridge"

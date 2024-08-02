@@ -1,0 +1,198 @@
+# In general search (pagination) works fine but never managed to test the detail logic ad it throws captcha instantly
+# Most of the offers are external anyway, so maybe at some point this could get activated
+# This service got captcha sometimes for detail page thus headless engine is a must
+crawler_configuration:
+
+  scrap_pagination:
+    engine: !php/const WebScrapperBundle\Service\CrawlerService::CRAWLER_ENGINE_GOUTTE
+    wait_for_dom_element_selector_name: ""
+    wait_for_function_to_return_true: ''
+    wait_milliseconds: 1000
+
+  scrap_job_offer_detail:
+    engine: !php/const WebScrapperBundle\Service\CrawlerService::CRAWLER_ENGINE_GOUTTE
+    wait_for_dom_element_selector_name: ''
+    wait_for_function_to_return_true: ''
+    wait_milliseconds: 1000
+
+search_uri:
+  base_host: null
+  resolver: 'JobSearcher\Service\JobService\Resolver\DomHtml\JoobleOrg->buildSearchUri'
+
+  base_uri:
+    standard: "/SearchResult"
+
+  keywords_placement: !php/const JobSearcher\Service\JobService\ConfigurationBuilder\ConfigurationBuilderInterface::KEYWORDS_PLACEMENT_QUERY
+
+  location:
+    query:
+      param_name: "rgns"
+    distance:
+      query:
+        param_name: "loc"
+
+      allowed_distances: {
+        7: 4,
+        8: 8,
+        5: 16,
+        9: 24,
+        6: 40,
+        10: 80,
+      }
+
+  encode_query: true
+
+# This job offers service is kinda tricky, in general 75% of offers are external ones, however there are some posted internally
+# The pagination works like this p2 -> returns results from page 1 and 2, p5 -> returns results from 4..3..2. and so on
+#
+# Setting the increment_value to 10, since most of the offers will get thrown away since these are external,
+# and with this having a chance to actually scrap some offers,
+# that should not impact performance too much since data there is a logic prevent from duplicates scrapping in single run
+
+pagination:
+  start_value: 1
+  increment_value: 1
+  multiple_keywords_separator_character: " "
+  page_number_query_parameter_name: "p"
+
+links:
+  detail_page:
+    excluded_regex_patterns:
+      - '/away/' # links to external services
+
+selectors:
+
+  # this special selector will fetch job offers card/blocks on pagination, is also used as fallback to get offer uri in case when the block itself is a link
+  pagination_page_offer_block:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_OFFER_BLOCK
+    css_selector: '#serpContent [data-test-name="_jobCard"]'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_job_title:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_JOB_TITLE
+    css_selector: 'a'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_company_name:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_COMPANY_NAME
+    css_selector: '.wrapper__new_tags_design div:nth-of-type(2) div p'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  pagination_page_link_to_detail_page:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_LINK_TO_DETAIL_PAGE
+    css_selector: 'a'
+    target_attribute_name: "href"
+    get_data_from_inner_text: false
+    get_data_from_attribute: true
+    called_method: null
+
+  pagination_page_company_location:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_PAGINATION_PAGE_COMPANY_LOCATION
+    css_selector: '.wrapper__new_tags_design div:nth-of-type(2) div:nth-of-type(2) svg + div'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  # Detail page
+  job_name_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_NAME
+    css_selector: null # is taken from pagination block
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  job_description_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_DESCRIPTION
+    css_selector: '[data-test-name="_jobCard"] > div:nth-of-type(1) > div:nth-of-type(2) div[data-test-name="_jdpHeaderBlock"]:nth-of-type(1) + div'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  company_location_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_COMPANY_WORKPLACE_DATA_LOCATION
+    css_selector: null # is taken from pagination block
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  company_name_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_COMPANY_WORKPLACE_DATA_COMPANY_NAME
+    css_selector: null # is taken from pagination block
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  contact_company_email:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_CONTACT_DETAIL_COMPANY_EMAIL
+    css_selector: '[data-test-name="_jobCard"] > div:nth-of-type(1) > div:nth-of-type(2) div[data-test-name="_jdpHeaderBlock"]:nth-of-type(1) + div'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\DomHtml\ScrapperInterface::METHOD_EXTRACT_EMAIL_FROM_STRING
+
+  contact_company_phone:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_CONTACT_DETAIL_COMPANY_PHONE
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  # Not possible to extract
+  salary_min_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_MIN
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  # Not possible to extract
+  salary_max_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_MAX
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  # Not possible to extract
+  salary_estimated_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_SALARY_ESTIMATED
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
+
+  # Not possible to extract
+  remote_work_possible_selector:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_REMOTE_WORK_POSSIBLE
+    css_selector: '[data-test-name="_jobCard"] > div:nth-of-type(1) > div:nth-of-type(2) div[data-test-name="_jdpHeaderBlock"]:nth-of-type(1) + div'
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: !php/const JobSearcher\Service\JobSearch\Scrapper\BaseScrapperService::METHOD_IS_REMOTE_WORK_POSSIBLE
+
+  # There is no information when it was posted
+  job_offer_job_posted_date_time:
+    dom_element_purpose: !php/const JobSearcher\DTO\JobSearch\DOM\DomElementConfigurationDto::PURPOSE_DETAIL_PAGE_OFFER_DETAIL_JOB_POSTED_DATE_TIME
+    css_selector: null
+    target_attribute_name: null
+    get_data_from_inner_text: true
+    get_data_from_attribute: false
+    called_method: null
